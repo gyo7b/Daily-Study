@@ -1,113 +1,94 @@
-/**
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  profile.js — Módulo de Perfil do Usuário                   ║
- * ║                                                              ║
- * ║  Responsável por:                                            ║
- * ║    • Ler e exibir os dados do perfil (nome, bio, avatar)     ║
- * ║    • Gerenciar uploads de foto de perfil e banner            ║
- * ║    • Controlar o formulário de edição de nome/bio            ║
- * ║    • Sincronizar o perfil com todos os elementos de UI       ║
- * ║                                                              ║
- * ║  Dependências: storage.js (deve ser carregado antes)         ║
- * ╚══════════════════════════════════════════════════════════════╝
- *
- * @module Profile
- * @exports {Object} Profile — API pública
- */
+/*
+  profile.js
+  ----------
+  Gerencia tudo relacionado ao perfil do usuário:
+  - Exibir nome, bio, avatar e banner na tela
+  - Upload de foto de perfil e banner (converte para Base64)
+  - Abrir/fechar/salvar o formulário de edição
+
+  Depende de: storage.js (deve ser carregado antes no HTML)
+*/
 
 const Profile = (() => {
 
-  // ═══════════════════════════════════════════
-  // HELPERS INTERNOS
-  // ═══════════════════════════════════════════
+  // ── Funções auxiliares ───────────────────────────────────────
 
-  /**
-   * Gera as iniciais de um nome para uso como fallback do avatar.
-   * Pega a primeira letra do primeiro nome e a primeira do último.
-   *
-   * @param  {string} name  Nome completo
-   * @returns {string}      Ex: "João da Silva" → "JS" | "Ana" → "A"
-   */
+  // Gera as iniciais do nome para usar como fallback do avatar.
+  // Ex: "João da Silva" → "JS" | "Ana" → "A"
   function getInitials(name) {
-    const parts = (name || 'U').trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 1) return parts[0][0].toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    const words = (name || 'U').trim().split(/\s+/).filter(Boolean);
+
+    if (words.length === 1) {
+      return words[0][0].toUpperCase();
+    }
+
+    const firstLetter = words[0][0].toUpperCase();
+    const lastLetter  = words[words.length - 1][0].toUpperCase();
+    return firstLetter + lastLetter;
   }
 
-  /**
-   * Define o conteúdo de um avatar:
-   *   • Se há uma imageUrl: insere <img> dentro do elemento
-   *   • Caso contrário: exibe as iniciais como texto
-   *
-   * @param {HTMLElement}   el        Elemento do avatar (.post-ava, .compose-ava…)
-   * @param {string}        name      Nome do usuário (para iniciais)
-   * @param {string|null}   imageUrl  Data URL da foto ou null
-   */
-  function setAvatarContent(el, name, imageUrl) {
-    if (!el) return;
-    el.innerHTML = ''; // limpa conteúdo anterior
+  // Preenche um elemento de avatar com foto ou iniciais.
+  // Se tiver foto, insere uma <img> dentro do elemento.
+  // Se não tiver, coloca o texto com as iniciais.
+  function fillAvatar(element, name, imageUrl) {
+    if (!element) return;
+
+    element.innerHTML = '';  // limpa conteúdo anterior
 
     if (imageUrl) {
       const img = document.createElement('img');
       img.src = imageUrl;
       img.alt = `Foto de ${name}`;
-      el.appendChild(img);
+      element.appendChild(img);
     } else {
-      el.textContent = getInitials(name);
+      element.textContent = getInitials(name);
     }
   }
 
-  /**
-   * Lê um arquivo de imagem e retorna uma Promise com a Data URL (Base64).
-   * Usado para converter arquivos selecionados em strings armazenáveis.
-   *
-   * @param  {File}    file  Arquivo de imagem
-   * @returns {Promise<string>} Data URL (ex: "data:image/jpeg;base64,...")
-   */
-  function fileToDataUrl(file) {
+  // Lê um arquivo de imagem e retorna uma Promise com a Data URL (Base64).
+  // Necessário para salvar imagens no localStorage.
+  function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload  = e => resolve(e.target.result);
-      reader.onerror = () => reject(new Error('Falha ao ler a imagem.'));
-      reader.readAsDataURL(file); // converte para Base64
+      reader.onload  = event => resolve(event.target.result);
+      reader.onerror = ()    => reject(new Error('Falha ao ler o arquivo.'));
+      reader.readAsDataURL(file);
     });
   }
 
 
-  // ═══════════════════════════════════════════
-  // SINCRONIZAÇÃO DE UI
-  // ═══════════════════════════════════════════
+  // ── Sincronização da UI ──────────────────────────────────────
 
-  /**
-   * Sincroniza TODOS os elementos de UI com os dados atuais do perfil.
-   * Deve ser chamado após qualquer alteração no perfil.
-   * Atualiza: avatar do compose, avatar grande, nome, bio, banner.
-   */
+  // Atualiza todos os elementos visuais com os dados atuais do perfil.
+  // Chamada sempre que o perfil muda (editar nome, trocar foto, etc.).
   function syncUI() {
-    const p = Storage.getProfile();
-    const { name, bio, avatarUrl, bannerUrl } = p;
+    const profile = Storage.getProfile();
 
-    // ── Avatar pequeno (compose box) ──────────────────
-    const composeAva = document.getElementById('composeAva');
-    setAvatarContent(composeAva, name, avatarUrl);
+    // Avatar no compose box
+    fillAvatar(
+      document.getElementById('composeAva'),
+      profile.name,
+      profile.avatarUrl
+    );
 
-    // ── Avatar grande (aba de perfil) ─────────────────
-    const profileAvaBig = document.getElementById('profileAvaBig');
-    setAvatarContent(profileAvaBig, name, avatarUrl);
+    // Avatar grande na aba de perfil
+    fillAvatar(
+      document.getElementById('profileAvaBig'),
+      profile.name,
+      profile.avatarUrl
+    );
 
-    // ── Nome ──────────────────────────────────────────
-    const pNameEl = document.getElementById('pName');
-    if (pNameEl) pNameEl.textContent = name;
+    // Nome e bio
+    const nameEl = document.getElementById('pName');
+    const bioEl  = document.getElementById('pBio');
+    if (nameEl) nameEl.textContent = profile.name;
+    if (bioEl)  bioEl.textContent  = profile.bio || '';
 
-    // ── Bio ───────────────────────────────────────────
-    const pBioEl = document.getElementById('pBio');
-    if (pBioEl) pBioEl.textContent = bio || '';
-
-    // ── Banner ────────────────────────────────────────
+    // Banner: mostra a imagem se existir, esconde se não existir
     const bannerImg = document.getElementById('bannerImg');
     if (bannerImg) {
-      if (bannerUrl) {
-        bannerImg.src = bannerUrl;
+      if (profile.bannerUrl) {
+        bannerImg.src = profile.bannerUrl;
         bannerImg.classList.remove('hidden');
       } else {
         bannerImg.src = '';
@@ -117,144 +98,91 @@ const Profile = (() => {
   }
 
 
-  // ═══════════════════════════════════════════
-  // FORMULÁRIO DE EDIÇÃO
-  // ═══════════════════════════════════════════
+  // ── Formulário de edição ─────────────────────────────────────
 
-  /**
-   * Abre o formulário de edição, preenchido com os dados atuais.
-   * Oculta o botão "Editar perfil" enquanto o form está aberto.
-   */
+  // Abre o formulário preenchido com os dados atuais.
   function openEditForm() {
-    const p = Storage.getProfile();
+    const profile = Storage.getProfile();
 
-    // Preenche os campos com os valores atuais
-    const nameInput = document.getElementById('eName');
-    const bioInput  = document.getElementById('eBio');
-    if (nameInput) nameInput.value = p.name;
-    if (bioInput)  bioInput.value  = p.bio || '';
+    document.getElementById('eName').value = profile.name;
+    document.getElementById('eBio').value  = profile.bio || '';
 
-    // Exibe o form e oculta o botão
     document.getElementById('editForm').classList.remove('hidden');
     document.getElementById('btnEditP').style.display = 'none';
 
-    // Foca no campo de nome para UX mais fluida
-    if (nameInput) nameInput.focus();
+    document.getElementById('eName').focus();
   }
 
-  /**
-   * Fecha o formulário de edição sem salvar.
-   * Restaura a visibilidade do botão "Editar perfil".
-   */
+  // Fecha o formulário sem salvar.
   function closeEditForm() {
     document.getElementById('editForm').classList.add('hidden');
     document.getElementById('btnEditP').style.display = '';
   }
 
-  /**
-   * Valida e salva as alterações de nome e bio.
-   * Sincroniza a UI e re-renderiza o feed para atualizar o nome nos posts.
-   *
-   * @returns {boolean} true se salvou com sucesso
-   */
+  // Valida e salva as alterações de nome e bio.
   function saveEditForm() {
-    const nameVal = document.getElementById('eName').value.trim();
-    const bioVal  = document.getElementById('eBio').value.trim();
+    const name = document.getElementById('eName').value.trim();
+    const bio  = document.getElementById('eBio').value.trim();
 
-    if (!nameVal) {
+    if (!name) {
       UI.showToast('O nome não pode estar vazio.', 'err');
       document.getElementById('eName').focus();
-      return false;
+      return;
     }
 
-    // Atualiza apenas nome e bio (preserva avatarUrl e bannerUrl)
-    Storage.patchProfile({ name: nameVal, bio: bioVal });
-
+    Storage.patchProfile({ name, bio });
     syncUI();
     closeEditForm();
 
-    // Re-renderiza posts para refletir o novo nome do autor
+    // Re-renderiza posts para atualizar o nome do autor nos cards
     Posts.renderFeed();
     Posts.renderProfilePosts();
 
     UI.showToast('Perfil atualizado!', 'ok');
-    return true;
   }
 
 
-  // ═══════════════════════════════════════════
-  // UPLOAD DE IMAGENS
-  // ═══════════════════════════════════════════
+  // ── Upload de imagens ────────────────────────────────────────
 
-  /**
-   * Processa um arquivo de imagem e o salva como avatar ou banner.
-   * Exibe feedback visual durante e após o processo.
-   *
-   * @param {File}   file   Arquivo de imagem selecionado
-   * @param {'avatar'|'banner'} type  Tipo de imagem a atualizar
-   */
+  // Processa o arquivo selecionado e salva como avatar ou banner.
+  // type deve ser 'avatar' ou 'banner'.
   async function handleImageUpload(file, type) {
     if (!file) return;
 
-    // Valida o tipo de arquivo (apenas imagens)
     if (!file.type.startsWith('image/')) {
       UI.showToast('Por favor, selecione apenas imagens.', 'err');
       return;
     }
 
-    // Feedback de processamento
     UI.showToast('Carregando imagem…');
 
     try {
-      // Converte o arquivo para Base64
-      const dataUrl = await fileToDataUrl(file);
+      const dataUrl = await readFileAsDataUrl(file);
 
       if (type === 'avatar') {
-        // Salva apenas o campo avatarUrl
         Storage.patchProfile({ avatarUrl: dataUrl });
         UI.showToast('Foto de perfil atualizada! 📸', 'ok');
-
-      } else if (type === 'banner') {
-        // Salva apenas o campo bannerUrl
+      } else {
         Storage.patchProfile({ bannerUrl: dataUrl });
         UI.showToast('Banner atualizado! 🖼️', 'ok');
       }
 
-      // Sincroniza toda a UI com o novo dado
       syncUI();
 
     } catch (err) {
-      // Pode ser quota exceeded ou erro de leitura
-      console.error('[Profile] Erro ao fazer upload:', err);
-      UI.showToast(err.message || 'Erro ao carregar imagem.', 'err');
+      console.error('Erro no upload:', err);
+      UI.showToast(err.message || 'Erro ao carregar a imagem.', 'err');
     }
   }
 
 
-  // ═══════════════════════════════════════════
-  // GETTERS PÚBLICOS
-  // ═══════════════════════════════════════════
+  // ── API pública ──────────────────────────────────────────────
 
-  /** Retorna o perfil atual do storage. */
-  function get() {
-    return Storage.getProfile();
-  }
-
-  /** Retorna as iniciais do nome atual. */
-  function getInitialsFromCurrent() {
-    return getInitials(Storage.getProfile().name);
-  }
-
-
-  // ─────────────────────────────────────────────
-  // API PÚBLICA
-  // ─────────────────────────────────────────────
   return {
-    get,
+    get:               Storage.getProfile,
     getInitials,
-    getInitialsFromCurrent,
-    setAvatarContent,
-    fileToDataUrl,
+    readFileAsDataUrl,
+    fillAvatar,
     syncUI,
     openEditForm,
     closeEditForm,

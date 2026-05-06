@@ -1,23 +1,17 @@
 /*
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  profile.css — Aba de Perfil                                ║
- * ║                                                              ║
- * ║  Estilos da aba "Perfil":                                    ║
- * ║    .profile-hero     → card com banner + avatar + info       ║
- * ║    .banner-zone      → zona clicável do banner               ║
- * ║    .avatar-wrap      → wrapper do avatar grande              ║
- * ║    .profile-ava-big  → avatar grande (foto de perfil)        ║
- * ║    .ava-edit-badge   → ícone de lápis sobre o avatar         ║
- * ║    .stats-row        → grade de estatísticas                 ║
- * ║    .section-head     → cabeçalho de seção com linha          ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
+  profile.css
+  -----------
+  Estilos da aba Perfil:
+  - .profile-hero     → card com banner + avatar + informações
+  - .banner-zone      → zona clicável do banner
+  - .avatar-wrap      → wrapper do avatar grande com badge
+  - .stats-row        → grade de estatísticas
+  - .section-head     → título de seção com linha divisória
+*/
 
 
-/* ══════════════════════════════════════════════
-   WRAPPER DA PÁGINA DE PERFIL
-   Empilha verticalmente todos os blocos do perfil.
-══════════════════════════════════════════════ */
+/* ─── Wrapper da aba de perfil ───────────────────────────────── */
+
 .profile-wrap {
   display: flex;
   flex-direction: column;
@@ -25,43 +19,29 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   HERO CARD
-   Card principal: banner (topo) + body (avatar + info).
-   overflow:hidden garante que o banner respeite o border-radius.
-══════════════════════════════════════════════ */
+/* ─── Hero card (banner + avatar + info) ─────────────────────── */
+
 .profile-hero {
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--r-xl);
-  overflow: hidden;
-  box-shadow: var(--sh);
+  overflow: hidden;  /* necessário para o banner respeitar o border-radius */
+  box-shadow: var(--shadow);
 }
 
 
-/* ══════════════════════════════════════════════
-   ZONA DO BANNER
-   Área clicável que cobre toda a largura do card.
-   O clique aciona o <input file> do banner via JS.
-   Exibe um overlay com hint no hover.
-══════════════════════════════════════════════ */
+/* ─── Zona do banner ─────────────────────────────────────────── */
+
 .banner-zone {
   position: relative;
   height: 190px;
-  /* Gradiente padrão quando não há imagem de banner */
-  background:
-    linear-gradient(
-      135deg,
-      #1c1f2e 0%,
-      #263252 40%,
-      #1a2640 70%,
-      #111620 100%
-    );
+  /* Gradiente padrão enquanto não há imagem de banner */
+  background: linear-gradient(135deg, #1c1f2e 0%, #263252 40%, #1a2640 70%, #111620 100%);
   cursor: pointer;
   overflow: hidden;
 }
 
-/* Textura de grade sobre o banner para dar profundidade */
+/* Textura sutil de grade sobre o banner */
 .banner-zone::after {
   content: '';
   position: absolute;
@@ -70,79 +50,66 @@
     45deg,
     transparent,
     transparent 22px,
-    rgba(255, 255, 255, .025) 22px,
-    rgba(255, 255, 255, .025) 23px
+    rgba(255, 255, 255, 0.025) 22px,
+    rgba(255, 255, 255, 0.025) 23px
   );
   pointer-events: none;
 }
 
-/* Imagem do banner (quando definida) */
+/* Imagem do banner quando definida */
 .banner-zone img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   position: absolute;
   inset: 0;
-  /* Fica acima do ::after para cobrir a textura */
   z-index: 1;
 }
 
-/* Overlay escuro com texto de hint — visível no hover */
+/* Overlay "Trocar banner" — aparece no hover */
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, .42);
+  background: rgba(0, 0, 0, 0.42);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   color: #fff;
   font-weight: 600;
-  font-size: .88rem;
+  font-size: 0.88rem;
   opacity: 0;
-  transition: opacity var(--t);
-  /* Fica acima da imagem do banner */
+  transition: opacity var(--transition);
   z-index: 2;
 }
 
-.banner-zone:hover .banner-overlay {
-  opacity: 1;
-}
+.banner-zone:hover .banner-overlay { opacity: 1; }
 
-/* Feedback visual ao arrastar arquivo sobre o banner */
+/* Feedback visual ao arrastar imagem para o banner */
 .banner-zone.drag-over {
-  outline: 3px dashed rgba(255,255,255,.6);
+  outline: 3px dashed rgba(255, 255, 255, 0.6);
   outline-offset: -6px;
 }
 
 
-/* ══════════════════════════════════════════════
-   BODY DO PERFIL
-   Área abaixo do banner: avatar flutuante + textos.
-══════════════════════════════════════════════ */
-.profile-body {
-  padding: 0 22px 22px;
-}
+/* ─── Corpo do perfil ────────────────────────────────────────── */
+
+.profile-body { padding: 0 22px 22px; }
 
 
-/* ══════════════════════════════════════════════
-   AVATAR WRAPPER
-   O margin-top negativo faz o avatar "escalar" para
-   cima do banner — efeito característico de redes sociais.
-   position:relative permite posicionar o badge.
-══════════════════════════════════════════════ */
+/* ─── Avatar grande ──────────────────────────────────────────── */
+
+/*
+  margin-top negativo faz o avatar "flutuar" sobre o banner —
+  efeito padrão de redes sociais como Twitter/LinkedIn.
+*/
 .avatar-wrap {
-  position: relative;
+  position: relative;  /* para o badge de lápis funcionar */
   display: inline-block;
-  margin-top: -40px;    /* metade da altura do avatar = sobreposição */
+  margin-top: -40px;
   margin-bottom: 14px;
 }
 
-/*
-  AVATAR GRANDE — foto de perfil
-  Borda branca separa o avatar do banner.
-  Clique aciona o input file do avatar.
-*/
 .profile-ava-big {
   width: 82px;
   height: 82px;
@@ -154,42 +121,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Borda branca para separar do banner */
-  border: 4px solid var(--surface);
+  border: 4px solid var(--surface);  /* borda branca separa do banner */
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 2px 12px rgba(0,0,0,.18);
-  transition: box-shadow var(--t), transform var(--t);
   user-select: none;
-  position: relative;    /* contexto para pseudo-elemento */
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+  transition: box-shadow var(--transition), transform var(--transition);
+  position: relative;
   z-index: 3;
 }
 
 .profile-ava-big:hover {
-  box-shadow: 0 4px 20px rgba(0,0,0,.28);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
   transform: scale(1.04);
 }
 
-/* Overlay escuro com hint ao passar o mouse */
+/* Overlay de câmera ao passar o mouse */
 .profile-ava-big::after {
   content: '📷';
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
   opacity: 0;
-  transition: opacity var(--t);
+  transition: opacity var(--transition);
   border-radius: 50%;
 }
 
-.profile-ava-big:hover::after {
-  opacity: 1;
-}
+.profile-ava-big:hover::after { opacity: 1; }
 
-/* A foto dentro do avatar preenche o círculo */
 .profile-ava-big img {
   width: 100%;
   height: 100%;
@@ -197,11 +160,7 @@
   border-radius: 50%;
 }
 
-/*
-  BADGE DE EDIÇÃO (lápis)
-  Círculo pequeno posicionado sobre o canto inferior
-  direito do avatar, indicando que é editável.
-*/
+/* Badge de lápis no canto do avatar */
 .ava-edit-badge {
   position: absolute;
   bottom: 3px;
@@ -215,48 +174,35 @@
   align-items: center;
   justify-content: center;
   color: #fff;
-  pointer-events: none;    /* não interfere no clique do avatar */
+  pointer-events: none;
   z-index: 4;
 }
 
 
-/* ══════════════════════════════════════════════
-   INFORMAÇÕES DO PERFIL
-══════════════════════════════════════════════ */
+/* ─── Informações do perfil ──────────────────────────────────── */
 
-/* Linha: bloco de info + botão editar */
+/* Linha com nome/bio à esquerda e botão editar à direita */
 .profile-name-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: wrap;    /* em telas pequenas, o botão cai para baixo */
+  flex-wrap: wrap;
 }
 
-.profile-info {
-  flex: 1;
-  min-width: 0;
-}
+.profile-info { flex: 1; min-width: 0; }
 
-/* Nome do usuário */
 .p-name {
   font-size: 1.35rem;
   font-weight: 800;
-  letter-spacing: -.025em;
-  line-height: 1.2;
+  letter-spacing: -0.025em;
 }
 
-/* Subtítulo (cargo/tipo) */
-.p-role {
-  font-size: .78rem;
-  color: var(--ink-3);
-  margin-top: 3px;
-}
+.p-role { font-size: 0.78rem; color: var(--ink-3); margin-top: 3px; }
 
-/* Bio do usuário */
 .p-bio {
   font-family: var(--font-body);
-  font-size: .9rem;
+  font-size: 0.9rem;
   color: var(--ink-2);
   line-height: 1.55;
   margin-top: 10px;
@@ -264,10 +210,8 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   ESTATÍSTICAS
-   Grade de dois cards com número + label.
-══════════════════════════════════════════════ */
+/* ─── Estatísticas ───────────────────────────────────────────── */
+
 .stats-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -279,40 +223,32 @@
   border: 1.5px solid var(--border);
   border-radius: var(--r-lg);
   padding: 20px 24px;
-  box-shadow: var(--sh);
+  box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   gap: 4px;
-  transition: border-color var(--t), box-shadow var(--t);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .stat-box:hover {
   border-color: var(--border-2);
-  box-shadow: var(--sh-lg);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Número grande em azul */
 .stat-num {
   font-size: 2.1rem;
   font-weight: 800;
-  letter-spacing: -.04em;
+  letter-spacing: -0.04em;
   color: var(--accent);
   line-height: 1;
 }
 
-/* Rótulo abaixo do número */
-.stat-lbl {
-  font-size: .76rem;
-  color: var(--ink-3);
-  font-weight: 500;
-}
+.stat-lbl { font-size: 0.76rem; color: var(--ink-3); font-weight: 500; }
 
 
-/* ══════════════════════════════════════════════
-   CABEÇALHO DE SEÇÃO
-   Linha com título e divisor horizontal.
-   Ex: "Suas postagens ─────────────────────"
-══════════════════════════════════════════ */
+/* ─── Cabeçalho de seção ─────────────────────────────────────── */
+
+/* Padrão: "Suas postagens ──────────────────" */
 .section-head {
   display: flex;
   align-items: center;
@@ -321,15 +257,15 @@
 }
 
 .section-title {
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
   white-space: nowrap;
 }
 
-/* Linha que se expande para ocupar o espaço restante */
+/* Linha que ocupa o espaço restante */
 .section-divider {
   flex: 1;
   height: 1px;

@@ -1,87 +1,45 @@
 /*
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  animations.css — Keyframes e Transições                    ║
- * ║                                                              ║
- * ║  Todas as animações do projeto ficam aqui.                  ║
- * ║  Usar animation-delay escalonado nos filhos cria um          ║
- * ║  efeito de "stagger" (cascata) agradável ao carregar.        ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
+  animations.css
+  --------------
+  Keyframes (animações) usados em todo o projeto.
+  Importado por último para sobrescrever se necessário.
+*/
 
-
-/* ══════════════════════════════════════════════
-   KEYFRAMES
-
-   fadeUp     → entra de baixo para cima com fade (cards, painéis)
-   fadeIn     → apenas fade de opacidade (overlays, backdrops)
-   slideUp    → entra de baixo com scale e bounce (modais)
-   shimmer    → loading skeleton effect (não usado agora, mas disponível)
-══════════════════════════════════════════════ */
-
+/* Entrada suave de baixo para cima (cards, painéis) */
 @keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
+/* Apenas fade (overlays, backdrops) */
 @keyframes fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 
-/* Animação dos modais: elástica (cubic-bezier com overshoot) */
+/* Entrada com elástico para modais */
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px) scale(.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 
-/* Shimmer para estados de carregamento */
-@keyframes shimmer {
-  from { background-position: -200% center; }
-  to   { background-position:  200% center; }
-}
+/*
+  Delay escalonado nos primeiros 8 posts do feed.
+  Cria efeito cascata ao carregar a lista pela primeira vez.
+*/
+.feed-list .post-card:nth-child(1) { animation-delay:   0ms; }
+.feed-list .post-card:nth-child(2) { animation-delay:  50ms; }
+.feed-list .post-card:nth-child(3) { animation-delay: 100ms; }
+.feed-list .post-card:nth-child(4) { animation-delay: 150ms; }
+.feed-list .post-card:nth-child(5) { animation-delay: 180ms; }
+.feed-list .post-card:nth-child(6) { animation-delay: 210ms; }
+.feed-list .post-card:nth-child(7) { animation-delay: 230ms; }
+.feed-list .post-card:nth-child(8) { animation-delay: 250ms; }
 
-
-/* ══════════════════════════════════════════════
-   DELAY ESCALONADO DOS POST CARDS
-   Cada card entra com um atraso progressivo,
-   criando efeito de "stagger" na listagem inicial.
-   Apenas os 8 primeiros são animados com stagger;
-   os demais entram sem delay.
-══════════════════════════════════════════════ */
-.feed-list .post-card:nth-child(1)  { animation-delay:   0ms; }
-.feed-list .post-card:nth-child(2)  { animation-delay:  50ms; }
-.feed-list .post-card:nth-child(3)  { animation-delay: 100ms; }
-.feed-list .post-card:nth-child(4)  { animation-delay: 150ms; }
-.feed-list .post-card:nth-child(5)  { animation-delay: 180ms; }
-.feed-list .post-card:nth-child(6)  { animation-delay: 210ms; }
-.feed-list .post-card:nth-child(7)  { animation-delay: 230ms; }
-.feed-list .post-card:nth-child(8)  { animation-delay: 250ms; }
-
-
-/* ══════════════════════════════════════════════
-   RESPEITO A preferências de acessibilidade
-   Usuários que pedem "reduced motion" veem
-   transições mínimas sem movimento.
-══════════════════════════════════════════════ */
+/* Respeita a preferência do sistema operacional por menos movimento */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: .01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: .01ms !important;
-    scroll-behavior: auto !important;
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }

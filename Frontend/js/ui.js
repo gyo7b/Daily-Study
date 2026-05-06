@@ -1,170 +1,106 @@
-/**
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  ui.js — Módulo de Interface (UI)                           ║
- * ║                                                              ║
- * ║  Responsável por controle de estados de UI que não           ║
- * ║  pertencem a um domínio específico:                          ║
- * ║    • Sistema de abas (feed ↔ perfil)                        ║
- * ║    • Modal de edição de post (abrir/fechar)                  ║
- * ║    • Toast de notificação temporária                         ║
- * ║    • Lightbox de imagem em tela cheia                        ║
- * ║                                                              ║
- * ║  Dependências: nenhuma (não importa outros módulos)          ║
- * ╚══════════════════════════════════════════════════════════════╝
- *
- * @module UI
- * @exports {Object} UI — API pública
- */
+/*
+  ui.js
+  -----
+  Controla os estados globais de interface que não pertencem
+  a um módulo específico:
+  - Sistema de abas (Feed, Buscar, Perfil)
+  - Modal de edição de post
+  - Toast de notificação temporária
+  - Lightbox de imagem em tela cheia
+
+  Não depende de outros módulos, mas Posts e Profile dependem dele.
+*/
 
 const UI = (() => {
 
-  // ═══════════════════════════════════════════
-  // SISTEMA DE ABAS
-  // ═══════════════════════════════════════════
+  // ── Abas ─────────────────────────────────────────────────────
 
-  /**
-   * Ativa uma aba pelo nome ('feed' ou 'profile').
-   * Atualiza:
-   *   1. Os painéis .tab-panel (adiciona/remove .active)
-   *   2. Os botões da rail lateral (.rail-btn)
-   *   3. Os botões da bottom-bar mobile (.bottom-btn)
-   *   4. O atributo aria-current para acessibilidade
-   * Ao ativar o perfil, re-renderiza posts e estatísticas.
-   *
-   * @param {'feed'|'profile'} tabName  Nome da aba a ativar
-   */
+  // Ativa uma aba pelo nome ('feed', 'search' ou 'profile').
+  // Atualiza: painéis, botões da rail e botões da bottom-bar.
   function activateTab(tabName) {
-    // ── Painéis ──────────────────────────────────
+    // Mostra o painel correto, esconde os outros
     document.querySelectorAll('.tab-panel').forEach(panel => {
-      const isTarget = panel.id === `tab-${tabName}`;
-      panel.classList.toggle('active', isTarget);
+      panel.classList.toggle('active', panel.id === `tab-${tabName}`);
     });
 
-    // ── Botões de navegação (rail + bottom-bar) ───
+    // Marca o botão correto como ativo na navegação
     document.querySelectorAll('[data-tab]').forEach(btn => {
-      const isTarget = btn.dataset.tab === tabName;
-      btn.classList.toggle('active', isTarget);
-      // Acessibilidade: indica a aba atual para leitores de tela
-      btn.setAttribute('aria-current', isTarget ? 'page' : 'false');
+      const isActive = btn.dataset.tab === tabName;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-current', isActive ? 'page' : 'false');
     });
 
-    // ── Ações específicas por aba ─────────────────
+    // Ao abrir o perfil, re-renderiza os posts e atualiza estatísticas
     if (tabName === 'profile') {
-      // Renderiza posts e atualiza stats ao entrar no perfil
       Posts.renderProfilePosts();
       Posts.updateStats();
     }
   }
 
 
-  // ═══════════════════════════════════════════
-  // MODAL DE EDIÇÃO DE POST
-  // ═══════════════════════════════════════════
+  // ── Modal ─────────────────────────────────────────────────────
 
-  /**
-   * Abre o modal de edição.
-   * Bloqueia o scroll da página (body) para evitar scroll duplo.
-   * Foca no textarea após a animação de abertura.
-   */
+  // Abre o modal de edição e bloqueia o scroll da página.
   function openModal() {
-    const backdrop = document.getElementById('modalBackdrop');
-    backdrop.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';   // bloqueia scroll da página
+    document.getElementById('modalBackdrop').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 
-    // Foca no textarea após a animação (250ms = duração do slideUp)
+    // Foca no textarea após a animação de entrada (250ms)
     setTimeout(() => {
       document.getElementById('editTa').focus();
     }, 260);
   }
 
-  /**
-   * Fecha o modal de edição.
-   * Restaura o scroll da página.
-   */
+  // Fecha o modal e restaura o scroll da página.
   function closeModal() {
-    const backdrop = document.getElementById('modalBackdrop');
-    backdrop.classList.add('hidden');
-    document.body.style.overflow = '';   // libera scroll da página
+    document.getElementById('modalBackdrop').classList.add('hidden');
+    document.body.style.overflow = '';
   }
 
 
-  // ═══════════════════════════════════════════
-  // TOAST DE NOTIFICAÇÃO
-  // ═══════════════════════════════════════════
+  // ── Toast ─────────────────────────────────────────────────────
 
-  /**
-   * Timer do toast atual (para resetar se um novo toast for chamado
-   * antes do anterior terminar).
-   * @type {number|null}
-   */
-  let _toastTimer = null;
+  // Timer para remover o toast automaticamente
+  let toastTimer = null;
 
-  /**
-   * Exibe uma notificação de toast temporária na parte inferior da tela.
-   * Se já houver um toast visível, ele é substituído imediatamente.
-   *
-   * @param {string}              message  Texto a exibir
-   * @param {''|'ok'|'err'}       type     Estilo: '' (neutro), 'ok' (verde), 'err' (vermelho)
-   * @param {number}              duration Duração em ms (padrão: 2800)
-   */
+  // Exibe uma notificação temporária na parte inferior da tela.
+  // type: '' (neutro/escuro) | 'ok' (verde) | 'err' (vermelho)
   function showToast(message, type = '', duration = 2800) {
     const toast = document.getElementById('toast');
 
-    // Reseta timer anterior, se houver
-    if (_toastTimer) {
-      clearTimeout(_toastTimer);
-      _toastTimer = null;
-    }
+    // Cancela o timer anterior se o toast ainda estiver visível
+    if (toastTimer) clearTimeout(toastTimer);
 
-    // Define conteúdo e tipo
     toast.textContent = message;
     toast.className   = `toast show ${type}`.trim();
 
-    // Agenda o desaparecimento
-    _toastTimer = setTimeout(() => {
+    toastTimer = setTimeout(() => {
       toast.classList.remove('show');
-      _toastTimer = null;
+      toastTimer = null;
     }, duration);
   }
 
 
-  // ═══════════════════════════════════════════
-  // LIGHTBOX DE IMAGEM
-  // ═══════════════════════════════════════════
+  // ── Lightbox ──────────────────────────────────────────────────
 
-  /**
-   * Abre o lightbox exibindo a imagem em tela cheia.
-   * Bloqueia o scroll da página durante a exibição.
-   *
-   * @param {string} imageSrc  URL ou Data URL da imagem
-   */
+  // Exibe uma imagem em tela cheia.
   function openLightbox(imageSrc) {
-    const lightbox = document.getElementById('lightbox');
-    const lbImg    = document.getElementById('lightboxImg');
-
-    lbImg.src = imageSrc;
-    lightbox.classList.remove('hidden');
+    document.getElementById('lightboxImg').src = imageSrc;
+    document.getElementById('lightbox').classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-
-    // Foca no botão de fechar (acessibilidade / ESC)
     document.getElementById('lightboxClose').focus();
   }
 
-  /**
-   * Fecha o lightbox e limpa a imagem.
-   * Libera o scroll da página.
-   */
+  // Fecha o lightbox.
   function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
-    lightbox.classList.add('hidden');
+    document.getElementById('lightbox').classList.add('hidden');
     document.getElementById('lightboxImg').src = '';
     document.body.style.overflow = '';
   }
 
 
-  // ─────────────────────────────────────────────
-  // API PÚBLICA
-  // ─────────────────────────────────────────────
+  // ── API pública ──────────────────────────────────────────────
+
   return {
     activateTab,
     openModal,

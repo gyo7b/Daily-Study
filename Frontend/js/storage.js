@@ -1,122 +1,91 @@
-/**
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  storage.js — Camada de Persistência (localStorage)         ║
- * ║                                                              ║
- * ║  Toda leitura e escrita no localStorage fica centralizada   ║
- * ║  aqui. Os outros módulos NUNCA acessam localStorage         ║
- * ║  diretamente — usam sempre este módulo.                      ║
- * ║                                                              ║
- * ║  Isso facilita trocar por uma API real no futuro:            ║
- * ║  basta alterar apenas este arquivo.                          ║
- * ║                                                              ║
- * ║  ATENÇÃO SOBRE IMAGENS:                                      ║
- * ║  Imagens são salvas como Data URLs (Base64).                 ║
- * ║  Isso funciona para imagens pequenas/médias,                 ║
- * ║  mas o localStorage tem limite de ~5MB por origem.           ║
- * ║  Para produção, use um servidor ou IndexedDB.                ║
- * ╚══════════════════════════════════════════════════════════════╝
- *
- * @module Storage
- * @exports {Object} Storage — API pública com métodos para posts e perfil
- */
+/*
+  storage.js
+  ----------
+  Camada de persistência: toda leitura e escrita no localStorage fica aqui.
+  Nenhum outro módulo deve acessar o localStorage diretamente.
+
+  Isso tem uma vantagem prática: quando o projeto migrar para um banco de dados
+  real (ex: MongoDB), só este arquivo precisa mudar.
+
+  Estrutura dos dados salvos:
+    ds_posts   → array de objetos { id, text, image, createdAt, editedAt }
+    ds_profile → objeto { name, bio, avatarUrl, bannerUrl }
+
+  Nota sobre imagens:
+    Imagens são salvas como Base64 (Data URL) diretamente no localStorage.
+    Isso funciona para protótipos, mas o localStorage tem limite de ~5MB.
+    Em produção, as imagens iriam para um serviço como AWS S3 ou Cloudinary.
+*/
 
 const Storage = (() => {
 
-  // ─────────────────────────────────────────────
-  // CHAVES DO localStorage
-  // Centralizar aqui evita erros de typo
-  // ─────────────────────────────────────────────
+  // Chaves do localStorage — centralizadas para evitar erros de digitação
   const KEYS = {
-    POSTS:   'ds_posts',    // Array de objetos de post
-    PROFILE: 'ds_profile',  // Objeto com dados do perfil
+    POSTS:   'ds_posts',
+    PROFILE: 'ds_profile',
+  };
+
+  // Perfil padrão exibido na primeira vez que o app é aberto
+  const DEFAULT_PROFILE = {
+    name:      'João da Silva',
+    bio:       'Apaixonado por aprender. Sempre estudando algo novo a cada dia.',
+    avatarUrl: null,
+    bannerUrl: null,
   };
 
 
-  // ═══════════════════════════════════════════
-  // MÉTODOS DE POSTS
-  // ═══════════════════════════════════════════
+  // ── Posts ────────────────────────────────────────────────────
 
-  /**
-   * Retorna todos os posts salvos, ordenados do mais novo para o mais antigo.
-   * (A ordem cronológica decrescente é mantida pois cada novo post é inserido
-   *  no início do array com unshift.)
-   *
-   * @returns {Array<PostObject>} Array de posts (pode ser vazio)
-   *
-   * @typedef  {Object}  PostObject
-   * @property {string}  id         UUID único do post
-   * @property {string}  text       Texto do post
-   * @property {string|null} image  Data URL da imagem ou null
-   * @property {string}  createdAt  ISO 8601 da criação
-   * @property {string|null} editedAt ISO 8601 da última edição ou null
-   */
+  // Retorna todos os posts salvos (array), mais recentes primeiro.
+  // Se não houver nada salvo ou o JSON estiver corrompido, retorna [].
   function getPosts() {
     try {
-      const raw = localStorage.getItem(KEYS.POSTS);
-      return raw ? JSON.parse(raw) : [];
+      const saved = localStorage.getItem(KEYS.POSTS);
+      return saved ? JSON.parse(saved) : [];
     } catch (err) {
-      // Se o JSON estiver corrompido, retorna array vazio
-      console.error('[Storage] Erro ao ler posts:', err);
+      console.error('Erro ao ler posts do localStorage:', err);
       return [];
     }
   }
 
-  /**
-   * Substitui o array inteiro de posts no localStorage.
-   * Uso interno — os consumidores usam addPost / editPost / deletePost.
-   *
-   * @param {Array<PostObject>} posts
-   */
+  // Salva o array completo de posts no localStorage.
+  // Função interna — use addPost, editPost ou deletePost.
   function savePosts(posts) {
     try {
       localStorage.setItem(KEYS.POSTS, JSON.stringify(posts));
     } catch (err) {
-      // Pode acontecer se localStorage estiver cheio (quota exceeded)
-      console.error('[Storage] Erro ao salvar posts:', err);
+      console.error('Erro ao salvar posts:', err);
       throw new Error('Armazenamento cheio. Exclua alguns posts com imagens.');
     }
   }
 
-  /**
-   * Cria um novo post, insere no início do array (ordem desc)
-   * e salva no localStorage.
-   *
-   * @param {string}      text           Texto da postagem (obrigatório)
-   * @param {string|null} imageDataUrl   Data URL da imagem ou null
-   * @returns {PostObject} O post recém-criado
-   */
+  // Cria um novo post e insere no início da lista (mais recente primeiro).
+  // Retorna o post criado.
   function addPost(text, imageDataUrl = null) {
     const posts = getPosts();
 
-    const post = {
-      id:        crypto.randomUUID(),  // ID único nativo do browser
+    const newPost = {
+      id:        crypto.randomUUID(),    // ID único nativo do browser
       text:      text.trim(),
-      image:     imageDataUrl,         // Base64 ou null
+      image:     imageDataUrl,           // String Base64 ou null
       createdAt: new Date().toISOString(),
       editedAt:  null,
     };
 
-    // unshift() insere no início → mais novo fica primeiro
-    posts.unshift(post);
+    posts.unshift(newPost);  // unshift insere no início → mais novo fica primeiro
     savePosts(posts);
 
-    return post;
+    return newPost;
   }
 
-  /**
-   * Atualiza o texto de um post existente pelo seu ID.
-   * Registra a data/hora da edição em editedAt.
-   *
-   * @param {string} id       ID do post a editar
-   * @param {string} newText  Novo texto
-   * @returns {PostObject|null} Post atualizado ou null se não encontrado
-   */
+  // Atualiza o texto de um post existente e registra a data da edição.
+  // Retorna o post atualizado, ou null se o ID não for encontrado.
   function editPost(id, newText) {
     const posts = getPosts();
-    const index = posts.findIndex(p => p.id === id);
+    const index = posts.findIndex(post => post.id === id);
 
     if (index === -1) {
-      console.warn('[Storage] editPost: post não encontrado:', id);
+      console.warn('editPost: ID não encontrado:', id);
       return null;
     }
 
@@ -127,97 +96,59 @@ const Storage = (() => {
     return posts[index];
   }
 
-  /**
-   * Remove um post pelo ID.
-   *
-   * @param {string} id  ID do post a excluir
-   */
+  // Remove um post pelo ID.
   function deletePost(id) {
-    const posts    = getPosts();
-    const filtered = posts.filter(p => p.id !== id);
-    savePosts(filtered);
+    const posts         = getPosts();
+    const postsWithout  = posts.filter(post => post.id !== id);
+    savePosts(postsWithout);
   }
 
 
-  // ═══════════════════════════════════════════
-  // MÉTODOS DE PERFIL
-  // ═══════════════════════════════════════════
+  // ── Perfil ───────────────────────────────────────────────────
 
-  /**
-   * Perfil padrão exibido na primeira execução.
-   * @type {ProfileObject}
-   */
-  const DEFAULT_PROFILE = {
-    name:        'Usuário Anônimo',
-    bio:         'Esta é a minha bio. Edite-a para se apresentar ao mundo!',
-    avatarUrl:   null,   // Data URL da foto de perfil
-    bannerUrl:   null,   // Data URL do banner
-  };
-
-  /**
-   * Retorna o perfil do usuário salvo.
-   * Se não houver perfil salvo, retorna o perfil padrão.
-   *
-   * @returns {ProfileObject}
-   *
-   * @typedef  {Object}      ProfileObject
-   * @property {string}      name       Nome do usuário
-   * @property {string}      bio        Biografia
-   * @property {string|null} avatarUrl  Data URL do avatar ou null
-   * @property {string|null} bannerUrl  Data URL do banner ou null
-   */
+  // Retorna o perfil salvo. Se não existir, retorna o DEFAULT_PROFILE.
+  // O spread { ...DEFAULT_PROFILE, ...saved } garante que campos novos
+  // adicionados no futuro tenham valor padrão em perfis antigos.
   function getProfile() {
     try {
-      const raw = localStorage.getItem(KEYS.PROFILE);
-      // Mescla com DEFAULT_PROFILE para garantir que novas propriedades
-      // adicionadas no futuro tenham valor padrão em perfis antigos
-      return raw ? { ...DEFAULT_PROFILE, ...JSON.parse(raw) } : { ...DEFAULT_PROFILE };
+      const saved = localStorage.getItem(KEYS.PROFILE);
+      return saved
+        ? { ...DEFAULT_PROFILE, ...JSON.parse(saved) }
+        : { ...DEFAULT_PROFILE };
     } catch (err) {
-      console.error('[Storage] Erro ao ler perfil:', err);
+      console.error('Erro ao ler perfil:', err);
       return { ...DEFAULT_PROFILE };
     }
   }
 
-  /**
-   * Salva (substitui) o perfil do usuário.
-   *
-   * @param {ProfileObject} profile  Objeto com os dados do perfil
-   */
+  // Salva o perfil completo.
   function saveProfile(profile) {
     try {
       localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
     } catch (err) {
-      console.error('[Storage] Erro ao salvar perfil:', err);
+      console.error('Erro ao salvar perfil:', err);
       throw new Error('Armazenamento cheio. A imagem pode ser muito grande.');
     }
   }
 
-  /**
-   * Atualiza parcialmente o perfil (merge com o existente).
-   * Útil para atualizar apenas o avatar sem mexer no nome/bio, etc.
-   *
-   * @param {Partial<ProfileObject>} partial  Campos a atualizar
-   * @returns {ProfileObject} Perfil completo após atualização
-   */
-  function patchProfile(partial) {
+  // Atualiza campos específicos do perfil sem sobrescrever os outros.
+  // Exemplo: patchProfile({ avatarUrl: '...' }) atualiza só o avatar.
+  function patchProfile(fields) {
     const current = getProfile();
-    const updated = { ...current, ...partial };
+    const updated = { ...current, ...fields };
     saveProfile(updated);
     return updated;
   }
 
 
-  // ─────────────────────────────────────────────
-  // API PÚBLICA DO MÓDULO
-  // ─────────────────────────────────────────────
+  // ── API pública ──────────────────────────────────────────────
+
+  // Apenas os métodos desta lista ficam acessíveis fora do módulo.
   return {
-    // Posts
     getPosts,
     addPost,
     editPost,
     deletePost,
-
-    // Perfil
     getProfile,
     saveProfile,
     patchProfile,
