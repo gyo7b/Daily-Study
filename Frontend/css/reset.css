@@ -1,22 +1,19 @@
 /*
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  reset.css — Normalização e Estilos Base                    ║
- * ║                                                              ║
- * ║  Remove inconsistências entre browsers e define os estilos  ║
- * ║  mais básicos de HTML e body.                                ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
+  reset.css
+  ---------
+  Remove estilos padrão do browser que variam entre Chrome, Firefox, Safari etc.
+  Define a base que todo o projeto vai herdar.
+*/
 
-/* ── Box model universal ─────────────────────────── */
-*,
-*::before,
-*::after {
+/* Aplica box-sizing em todos os elementos:
+   padding e border são incluídos na largura/altura,
+   facilitando muito o cálculo de tamanhos. */
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* ── Base da página ──────────────────────────────── */
 html {
   font-size: 16px;
   scroll-behavior: smooth;
@@ -28,11 +25,12 @@ body {
   color: var(--ink);
   line-height: 1.6;
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased;  /* suaviza texto no WebKit */
-  -moz-osx-font-smoothing: grayscale;   /* suaviza texto no Firefox/macOS */
+  /* Suaviza a renderização das fontes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Botões: herdam fonte e removem estilos nativos ─ */
+/* Botões herdam a fonte do pai e não têm borda/fundo por padrão */
 button {
   font-family: inherit;
   cursor: pointer;
@@ -42,48 +40,38 @@ button {
   line-height: inherit;
 }
 
-/* ── Campos de texto ─────────────────────────────── */
-input,
-textarea {
+/* Campos de texto também herdam a fonte e não têm borda/resize */
+input, textarea {
   font-family: inherit;
   border: none;
   outline: none;
   background: none;
   color: inherit;
-  resize: none;       /* desabilita resize manual do textarea */
+  resize: none;
   line-height: inherit;
 }
 
-/* ── Listas ──────────────────────────────────────── */
-ul,
-ol {
+ul, ol {
   list-style: none;
 }
 
-/* ── Imagens ─────────────────────────────────────── */
 img {
   display: block;
   max-width: 100%;
-  object-fit: cover;  /* padrão; cada uso pode sobrescrever */
+  object-fit: cover;
 }
 
-/* ── Links ───────────────────────────────────────── */
 a {
   color: inherit;
   text-decoration: none;
 }
 
-/* ── Inputs de arquivo SEMPRE ocultos ───────────────
-   Todos os <input type="file"> são acionados por
-   <label> clicáveis visualmente estilizados.         */
+/* Inputs de arquivo são invisíveis — ativados por <label> estilizados */
 input[type="file"] {
   display: none;
 }
 
-/* ── Classe utilitária de ocultamento ───────────────
-   Usa !important para garantir que o JS possa
-   mostrar/ocultar elementos adicionando/removendo
-   esta classe sem conflito com outros estilos.       */
+/* Utilitário para esconder elementos via JavaScript */
 .hidden {
   display: none !important;
 }

@@ -1,23 +1,19 @@
 /*
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  feed.css — Compose Box e Cards de Post                     ║
- * ║                                                              ║
- * ║  Estilos específicos da aba "Feed":                          ║
- * ║    .feed-top          → título + badge de contagem           ║
- * ║    .compose           → caixa de criação de post             ║
- * ║    .compose-img-preview → prévia da imagem selecionada       ║
- * ║    .tool-btn           → botão de ferramenta (imagem…)       ║
- * ║    .feed-list          → container dos posts                 ║
- * ║    .post-card          → card individual de post             ║
- * ║    .post-image         → imagem anexada ao post              ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
+  feed.css
+  --------
+  Estilos da aba Feed:
+  - .feed-top          → título e contador de posts
+  - .compose           → caixa de criação de post
+  - .compose-img-preview → pré-visualização de imagem
+  - .tool-btn          → botão de anexar imagem
+  - .feed-list         → container dos posts
+  - .post-card         → card individual de post
+  - .post-image        → imagem dentro do post
+*/
 
 
-/* ══════════════════════════════════════════════
-   TOPO DO FEED
-   Linha com título e contador de posts.
-══════════════════════════════════════════════ */
+/* ─── Topo do feed ───────────────────────────────────────────── */
+
 .feed-top {
   display: flex;
   align-items: center;
@@ -28,12 +24,12 @@
 .feed-title {
   font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
 }
 
-/* Pílula de contagem de posts */
+/* Pílula com o total de posts */
 .post-badge {
-  font-size: .73rem;
+  font-size: 0.73rem;
   font-weight: 600;
   color: var(--ink-3);
   background: var(--bg-2);
@@ -42,49 +38,41 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   COMPOSE BOX
-   Card de criação de post com avatar + textarea.
-   Muda borda ao receber foco (focus-within).
-══════════════════════════════════════════════ */
+/* ─── Compose box ────────────────────────────────────────────── */
+
+/* Container do formulário de criação de post */
 .compose {
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--r-xl);
   padding: 18px;
   margin-bottom: 20px;
-  box-shadow: var(--sh);
-  transition: border-color var(--t), box-shadow var(--t);
+  box-shadow: var(--shadow);
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
-/* Borda azul + sombra leve ao ter foco em qualquer filho */
+/* Borda azul quando qualquer filho está em foco */
 .compose:focus-within {
   border-color: var(--accent);
-  box-shadow: var(--sh), 0 0 0 3px rgba(37,80,232,.08);
+  box-shadow: var(--shadow), 0 0 0 3px rgba(37, 80, 232, 0.08);
 }
 
-/* Linha: avatar + corpo */
+/* Linha com avatar à esquerda e corpo à direita */
 .compose-row {
   display: flex;
   gap: 14px;
   align-items: flex-start;
 }
 
-/* O avatar ocupa espaço fixo; não encolhe */
-.compose-ava {
-  margin-top: 2px;  /* alinha visualmente com o texto */
-}
-
-/* Corpo do compose: empilhado verticalmente */
+/* Corpo do compose: textarea + preview + rodapé */
 .compose-body {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  min-width: 0;     /* impede overflow em flex */
+  min-width: 0;
 }
 
-/* Textarea do compose */
 .compose-ta {
   width: 100%;
   font-family: var(--font-body);
@@ -100,17 +88,14 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   PRÉ-VISUALIZAÇÃO DE IMAGEM NO COMPOSE
-   Aparece abaixo da textarea quando o usuário
-   seleciona uma imagem. Inclui botão para remover.
-══════════════════════════════════════════════ */
+/* ─── Pré-visualização de imagem ─────────────────────────────── */
+
+/* Aparece abaixo do textarea ao selecionar uma imagem */
 .compose-img-preview {
   position: relative;
   border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid var(--border);
-  /* Limita a altura para não tomar a tela toda */
   max-height: 280px;
   background: var(--bg-2);
 }
@@ -122,7 +107,7 @@
   display: block;
 }
 
-/* Botão ✕ para remover a imagem selecionada */
+/* Botão ✕ para remover a imagem */
 .remove-img-btn {
   position: absolute;
   top: 8px;
@@ -130,13 +115,13 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(0, 0, 0, .6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: .78rem;
-  transition: background var(--t);
+  font-size: 0.78rem;
+  transition: background var(--transition);
 }
 
 .remove-img-btn:hover {
@@ -144,10 +129,9 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   RODAPÉ DO COMPOSE
-   Linha com ferramentas à esquerda e ações à direita.
-══════════════════════════════════════════════ */
+/* ─── Rodapé do compose ──────────────────────────────────────── */
+
+/* Ferramentas à esquerda, contador + botão à direita */
 .compose-foot {
   display: flex;
   align-items: center;
@@ -155,54 +139,30 @@
   gap: 12px;
 }
 
-.compose-tools {
-  display: flex;
-  gap: 6px;
-}
+.compose-tools { display: flex; gap: 6px; }
+.compose-right { display: flex; align-items: center; gap: 10px; }
 
-/* Lado direito: contador + botão publicar */
-.compose-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-/*
-  Botão de ferramenta (ex: "Imagem")
-  Usa <label> para acionar o <input type="file"> oculto.
-  Estilizado como um botão discreto com ícone + texto.
-*/
+/* Botão de ferramenta (ex: "Imagem") — usa <label> para acionar input file */
 .tool-btn {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 7px 12px;
   border-radius: var(--r-sm);
-  font-size: .78rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-3);
   cursor: pointer;
-  transition: background var(--t), color var(--t);
   user-select: none;
+  transition: background var(--transition), color var(--transition);
 }
 
-.tool-btn:hover {
-  background: var(--bg-2);
-  color: var(--accent);
-}
-
-/* Estado ativo: quando uma imagem já foi selecionada */
-.tool-btn.has-image {
-  color: var(--accent);
-  background: var(--accent-bg);
-}
+.tool-btn:hover   { background: var(--bg-2); color: var(--accent); }
+.tool-btn.has-image { color: var(--accent); background: var(--accent-bg); }
 
 
-/* ══════════════════════════════════════════════
-   LISTA DE POSTS
-   Container flex vertical com espaçamento
-   entre os cards.
-══════════════════════════════════════════════ */
+/* ─── Lista de posts ─────────────────────────────────────────── */
+
 .feed-list {
   display: flex;
   flex-direction: column;
@@ -210,31 +170,24 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   POST CARD
-   Card individual de cada postagem.
-   Estrutura: cabeçalho (avatar + meta + ações)
-              + corpo (texto)
-              + imagem (opcional)
-              + rodapé (timestamp)
-══════════════════════════════════════════════ */
+/* ─── Card de post ───────────────────────────────────────────── */
+
 .post-card {
   background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--r-xl);
   padding: 20px 22px;
-  box-shadow: var(--sh);
-  /* Animação de entrada; cada card tem delay escalonado (ver animations.css) */
-  animation: fadeUp .3s ease both;
-  transition: border-color var(--t), box-shadow var(--t);
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.3s ease both;
+  transition: border-color var(--transition), box-shadow var(--transition);
 }
 
 .post-card:hover {
   border-color: var(--border-2);
-  box-shadow: var(--sh-lg);
+  box-shadow: var(--shadow-lg);
 }
 
-/* ── Cabeçalho do card ───────────────────────── */
+/* Linha: avatar | nome+data | botões de ação */
 .post-head {
   display: flex;
   align-items: flex-start;
@@ -242,53 +195,30 @@
   margin-bottom: 12px;
 }
 
-/* Avatar do post (estilizado em components.css) */
-.post-ava {
-  width: 40px;
-  height: 40px;
-  font-size: .75rem;
-  margin-top: 1px;  /* alinha com a primeira linha do texto */
-}
+.post-ava { width: 40px; height: 40px; font-size: 0.75rem; margin-top: 1px; }
 
-/* Meta: nome do autor + data */
-.post-meta {
-  flex: 1;
-  min-width: 0;
-}
+.post-meta { flex: 1; min-width: 0; }
 
 .post-author {
   font-weight: 700;
-  font-size: .9rem;
+  font-size: 0.9rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.post-date {
-  font-size: .72rem;
-  color: var(--ink-3);
-  margin-top: 1px;
-}
+.post-date { font-size: 0.72rem; color: var(--ink-3); margin-top: 1px; }
 
-/*
-  Botões de ação (editar / excluir)
-  Ficam invisíveis e aparecem no hover do card.
-  Isso mantém a interface limpa.
-*/
+/* Botões de editar/excluir — aparecem só no hover do card */
 .post-actions {
   display: flex;
   gap: 4px;
-  /* Oculto por padrão */
   opacity: 0;
-  transition: opacity var(--t);
+  transition: opacity var(--transition);
 }
 
-/* Revela botões ao passar o mouse no card */
-.post-card:hover .post-actions {
-  opacity: 1;
-}
+.post-card:hover .post-actions { opacity: 1; }
 
-/* Botão individual de ação (editar / excluir) */
 .pa-btn {
   width: 30px;
   height: 30px;
@@ -297,41 +227,32 @@
   align-items: center;
   justify-content: center;
   color: var(--ink-3);
-  font-size: .8rem;
-  transition: background var(--t), color var(--t);
+  font-size: 0.8rem;
+  transition: background var(--transition), color var(--transition);
 }
 
-.pa-btn:hover {
-  background: var(--bg-2);
-  color: var(--ink);
-}
+.pa-btn:hover      { background: var(--bg-2);    color: var(--ink);    }
+.pa-btn.del:hover  { background: var(--danger-bg); color: var(--danger); }
 
-/* Variante: botão excluir (vermelho no hover) */
-.pa-btn.del:hover {
-  background: var(--danger-bg);
-  color: var(--danger);
-}
-
-/* ── Texto do post ───────────────────────────── */
+/* Texto da postagem — usa fonte serifada para melhor leitura */
 .post-text {
   font-family: var(--font-body);
-  font-size: .95rem;
+  font-size: 0.95rem;
   line-height: 1.72;
   color: var(--ink);
-  white-space: pre-wrap;    /* preserva quebras de linha do usuário */
-  word-break: break-word;   /* quebra palavras longas/URLs */
+  white-space: pre-wrap;   /* preserva quebras de linha */
+  word-break: break-word;  /* quebra URLs e palavras longas */
 }
 
-/* ── Imagem do post ──────────────────────────── */
+/* Imagem anexada ao post */
 .post-image {
   margin-top: 14px;
   border-radius: var(--r-md);
   overflow: hidden;
   border: 1px solid var(--border);
-  /* Limita altura máxima para evitar imagens enormes */
   max-height: 480px;
   background: var(--bg-2);
-  cursor: zoom-in;          /* indica que é clicável para ampliar */
+  cursor: zoom-in;
 }
 
 .post-image img {
@@ -339,34 +260,23 @@
   max-height: 480px;
   object-fit: cover;
   display: block;
-  transition: transform var(--t-slow);
+  transition: transform var(--transition-slow);
 }
 
-/* Leve zoom ao passar o mouse */
-.post-image:hover img {
-  transform: scale(1.015);
-}
+.post-image:hover img { transform: scale(1.015); }
 
-/* ── Rodapé do post ──────────────────────────── */
+/* Rodapé do post com timestamp */
 .post-footer {
   margin-top: 14px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  gap: 16px;
 }
 
-/* Timestamp no rodapé */
-.post-ts {
-  font-size: .7rem;
-  color: var(--ink-3);
-  margin-left: auto;  /* empurra para a direita */
-}
+.post-ts { font-size: 0.7rem; color: var(--ink-3); }
 
-/* Tag de "editado" exibida nos posts modificados */
+/* Tag "editado" exibida em posts que foram alterados */
 .post-edited-tag {
-  font-size: .7rem;
+  font-size: 0.7rem;
   color: var(--ink-3);
   font-style: italic;
   margin-top: 10px;

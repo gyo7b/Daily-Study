@@ -1,74 +1,60 @@
 /*
- * ╔══════════════════════════════════════════════════════════════╗
- * ║  search.css — Estilos da Funcionalidade de Busca            ║
- * ║                                                              ║
- * ║  Cobertura:                                                  ║
- * ║    Campo de busca na rail (desktop) e no feed sidebar        ║
- * ║    Aba de busca (/tab-search)                                ║
- * ║    Cards de resultado (perfil + post)                        ║
- * ║    Highlight de termos encontrados                           ║
- * ║    Destaque pulsante em post do feed (ao clicar resultado)   ║
- * ║    Estados: placeholder, vazio, carregando                   ║
- * ╚══════════════════════════════════════════════════════════════╝
- */
+  search.css
+  ----------
+  Estilos da funcionalidade de busca:
+  - Campo de busca (.search-box / .search-input)
+  - Barra de busca no feed (.feed-search-bar)
+  - Aba de busca completa (#tab-search)
+  - Cards de resultado (perfil e post)
+  - Highlight de termos encontrados (<mark>)
+  - Animação de destaque no post do feed
+*/
 
 
-/* ══════════════════════════════════════════════
-   CAMPO DE BUSCA — componente reutilizável
-   Aparece em dois lugares:
-     1. Na rail expandida (desktop) — classe .rail-search
-     2. Na barra de busca da aba de feed — .feed-search-bar
-══════════════════════════════════════════════ */
+/* ─── Campo de busca (componente base) ───────────────────────── */
 
-/* Container do input com ícone de lupa */
+/* Wrapper com posição relativa para o ícone e botão ✕ funcionarem */
 .search-box {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-/* Ícone de lupa posicionado à esquerda do input */
+/* Ícone de lupa — decorativo, posicionado dentro do input */
 .search-box .search-icon {
   position: absolute;
   left: 12px;
   color: var(--ink-3);
-  pointer-events: none;   /* não bloqueia cliques no input */
+  pointer-events: none;
   display: flex;
   align-items: center;
-  transition: color var(--t);
+  transition: color var(--transition);
 }
 
-/* O input em si — fundo discreto, borda sutil */
 .search-input {
   width: 100%;
   background: var(--bg-2);
   border: 1.5px solid var(--border);
   border-radius: var(--r-pill);
-  padding: 9px 14px 9px 38px;  /* padding-left reserva espaço para a lupa */
-  font-size: .85rem;
+  padding: 9px 14px 9px 38px;  /* espaço para o ícone da lupa */
+  font-size: 0.85rem;
   color: var(--ink);
-  transition: border-color var(--t), background var(--t), box-shadow var(--t);
+  transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
 }
 
-.search-input::placeholder {
-  color: var(--ink-3);
-}
+.search-input::placeholder { color: var(--ink-3); }
 
-/* Foco: borda azul + sombra leve */
 .search-input:focus {
   border-color: var(--accent);
   background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(37,80,232,.08);
+  box-shadow: 0 0 0 3px rgba(37, 80, 232, 0.08);
   outline: none;
 }
 
-/* Quando focado, a lupa também fica azul */
-.search-input:focus + .search-icon,   /* atenção: esse seletor não funciona em CSS puro */
-.search-box:focus-within .search-icon {
-  color: var(--accent);
-}
+/* A lupa fica azul quando o campo está em foco */
+.search-box:focus-within .search-icon { color: var(--accent); }
 
-/* Botão ✕ para limpar a busca (aparece quando há texto) */
+/* Botão ✕ para limpar o campo — aparece quando tem texto (.has-value) */
 .search-clear-btn {
   position: absolute;
   right: 10px;
@@ -80,52 +66,40 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: .65rem;
+  font-size: 0.65rem;
   cursor: pointer;
   opacity: 0;
-  transform: scale(.7);
-  transition: opacity var(--t), transform var(--t), background var(--t);
+  transform: scale(0.7);
+  transition: opacity var(--transition), transform var(--transition), background var(--transition);
   pointer-events: none;
 }
 
-/* O botão ✕ só aparece quando o input tem valor (controlado por JS) */
+/* JS adiciona .has-value quando o input tem texto */
 .search-box.has-value .search-clear-btn {
   opacity: 1;
   transform: scale(1);
   pointer-events: auto;
 }
 
-.search-clear-btn:hover {
-  background: var(--danger);
-}
+.search-clear-btn:hover { background: var(--danger); }
 
 
-/* ══════════════════════════════════════════════
-   BARRA DE BUSCA NO FEED
-   Campo de busca logo abaixo do título do feed.
-   Ajuda o usuário a filtrar posts sem mudar de aba.
-══════════════════════════════════════════════ */
-.feed-search-bar {
-  margin-bottom: 20px;
-}
+/* ─── Campo de busca inline no feed ──────────────────────────── */
 
-/* Contador de resultados inline (ex: "3 resultados") */
+.feed-search-bar { margin-bottom: 20px; }
+
+/* Contador de resultados abaixo do campo (ex: "3 posts encontrados") */
 .feed-search-count {
-  font-size: .73rem;
+  font-size: 0.73rem;
   color: var(--ink-3);
   text-align: center;
   margin-top: 6px;
-  min-height: 18px;  /* evita layout shift quando aparece/desaparece */
-  transition: opacity var(--t);
+  min-height: 18px;
 }
 
 
-/* ══════════════════════════════════════════════
-   ABA DE BUSCA (tab-search)
-   Painel completo com campo de busca + resultados.
-══════════════════════════════════════════════ */
+/* ─── Aba de busca ───────────────────────────────────────────── */
 
-/* Topo da aba de busca */
 .search-top {
   display: flex;
   align-items: center;
@@ -136,39 +110,27 @@
 .search-top h1 {
   font-size: 1.55rem;
   font-weight: 800;
-  letter-spacing: -.03em;
+  letter-spacing: -0.03em;
 }
 
-/* Contador de resultados na aba de busca */
+/* Contador de resultados no canto direito */
 .search-result-count {
-  font-size: .73rem;
+  font-size: 0.73rem;
   font-weight: 600;
   color: var(--ink-3);
   background: var(--bg-2);
   padding: 4px 12px;
   border-radius: var(--r-pill);
-  transition: opacity var(--t);
 }
 
-/* Campo de busca maior na aba dedicada */
-.search-main-box {
-  margin-bottom: 24px;
-}
-
-.search-main-box .search-input {
-  font-size: .95rem;
-  padding: 12px 16px 12px 44px;
-}
-
-.search-main-box .search-icon {
-  left: 16px;
-}
+/* Campo de busca principal — maior que o inline do feed */
+.search-main-box { margin-bottom: 24px; }
+.search-main-box .search-input  { font-size: 0.95rem; padding: 12px 16px 12px 44px; }
+.search-main-box .search-icon   { left: 16px; }
 
 
-/* ══════════════════════════════════════════════
-   PLACEHOLDER — estado inicial antes de digitar
-   Instrui o usuário sobre como usar a busca.
-══════════════════════════════════════════════ */
+/* ─── Placeholder (antes de digitar) ─────────────────────────── */
+
 .search-placeholder {
   display: flex;
   flex-direction: column;
@@ -179,26 +141,11 @@
   color: var(--ink-3);
 }
 
-.search-placeholder-icon {
-  font-size: 2.8rem;
-  line-height: 1;
-  margin-bottom: 4px;
-  opacity: .7;
-}
+.search-placeholder-icon { font-size: 2.8rem; opacity: 0.7; margin-bottom: 4px; }
+.search-placeholder h3   { font-size: 1rem; font-weight: 700; color: var(--ink-2); }
+.search-placeholder p    { font-size: 0.85rem; max-width: 240px; line-height: 1.5; }
 
-.search-placeholder h3 {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--ink-2);
-}
-
-.search-placeholder p {
-  font-size: .85rem;
-  max-width: 240px;
-  line-height: 1.5;
-}
-
-/* Chips de sugestão clicáveis */
+/* Chips de sugestão (ex: "React", "Python") */
 .search-suggestions {
   display: flex;
   flex-wrap: wrap;
@@ -212,11 +159,11 @@
   border-radius: var(--r-pill);
   background: var(--bg-2);
   border: 1px solid var(--border);
-  font-size: .78rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--ink-2);
   cursor: pointer;
-  transition: background var(--t), border-color var(--t), color var(--t);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
 .search-suggestion-chip:hover {
@@ -226,20 +173,16 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   SEÇÕES DE RESULTADOS
-   Agrupa resultados por tipo: "Usuários" / "Postagens"
-══════════════════════════════════════════════ */
-.search-section {
-  margin-bottom: 24px;
-}
+/* ─── Seções de resultados ───────────────────────────────────── */
 
-/* Título da seção: linha + texto */
+.search-section { margin-bottom: 24px; }
+
+/* Título de seção: "Usuários ────" ou "Postagens (3) ────" */
 .search-section-title {
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   color: var(--ink-3);
   margin-bottom: 10px;
   display: flex;
@@ -255,10 +198,8 @@
 }
 
 
-/* ══════════════════════════════════════════════
-   CARDS DE RESULTADO
-   Base compartilhada entre resultado de perfil e post.
-══════════════════════════════════════════════ */
+/* ─── Cards de resultado ─────────────────────────────────────── */
+
 .search-result-card {
   background: var(--surface);
   border: 1.5px solid var(--border);
@@ -266,28 +207,24 @@
   padding: 14px 16px;
   margin-bottom: 10px;
   cursor: pointer;
-  transition: border-color var(--t), box-shadow var(--t), background var(--t);
-  animation: fadeUp .2s ease both;
+  animation: fadeUp 0.2s ease both;
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
 }
 
 .search-result-card:hover {
   border-color: var(--accent);
-  box-shadow: var(--sh), 0 0 0 3px rgba(37,80,232,.06);
+  box-shadow: var(--shadow), 0 0 0 3px rgba(37, 80, 232, 0.06);
 }
 
-.search-result-card:active {
-  background: var(--accent-bg);
-}
+.search-result-card:active { background: var(--accent-bg); }
 
-
-/* ── Card de resultado de PERFIL ─────────── */
+/* Card de perfil: avatar + nome/bio + seta */
 .search-result-profile {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-/* Avatar no card de perfil */
 .result-ava {
   width: 44px;
   height: 44px;
@@ -295,7 +232,7 @@
   background: var(--ink);
   color: #fff;
   font-weight: 700;
-  font-size: .8rem;
+  font-size: 0.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,30 +241,21 @@
   border: 2px solid var(--border);
 }
 
-.result-ava img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.result-ava img { width: 100%; height: 100%; object-fit: cover; }
 
-.result-body {
-  flex: 1;
-  min-width: 0;
-}
+.result-body { flex: 1; min-width: 0; }
 
-/* Nome no resultado de perfil */
 .result-name {
   font-weight: 700;
-  font-size: .9rem;
+  font-size: 0.9rem;
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
 }
 
-/* Bio no resultado de perfil */
 .result-bio {
-  font-size: .82rem;
+  font-size: 0.82rem;
   color: var(--ink-2);
   margin-top: 2px;
   white-space: nowrap;
@@ -335,11 +263,10 @@
   text-overflow: ellipsis;
 }
 
-/* Seta indicando que é clicável */
 .result-arrow {
   color: var(--ink-3);
-  font-size: .9rem;
-  transition: color var(--t), transform var(--t);
+  font-size: 0.9rem;
+  transition: color var(--transition), transform var(--transition);
 }
 
 .search-result-card:hover .result-arrow {
@@ -347,75 +274,50 @@
   transform: translateX(3px);
 }
 
-
-/* ── Badge de campo com match ────────────── */
-/* Indica se o match foi no nome ou na bio */
+/* Badges que mostram onde o match aconteceu (nome ou bio) */
 .match-badge {
-  font-size: .62rem;
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   padding: 2px 7px;
   border-radius: var(--r-pill);
 }
 
-.match-name {
-  background: var(--accent-bg);
-  color: var(--accent);
-}
+.match-name { background: var(--accent-bg); color: var(--accent); }
+.match-bio  { background: var(--bg-2);      color: var(--ink-3);  }
 
-.match-bio {
-  background: var(--bg-2);
-  color: var(--ink-3);
-}
+/* Card de resultado de post */
+.search-result-post { display: flex; gap: 12px; }
+.result-post-body   { flex: 1; min-width: 0; }
 
-
-/* ── Card de resultado de POST ───────────── */
-.search-result-post {
-  display: flex;
-  gap: 12px;
-}
-
-.result-post-body {
-  flex: 1;
-  min-width: 0;
-}
-
-/* Trecho do texto do post com highlight */
+/* Trecho do texto com highlight — limita a 3 linhas */
 .result-post-text {
   font-family: var(--font-body);
-  font-size: .88rem;
+  font-size: 0.88rem;
   color: var(--ink);
   line-height: 1.55;
-  /* Limita a 3 linhas com reticências */
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
-/* Meta do post: autor · data */
 .result-post-meta {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: .72rem;
+  font-size: 0.72rem;
   color: var(--ink-3);
   margin-top: 6px;
 }
 
-.result-dot {
-  opacity: .5;
-}
-
-.result-has-img {
-  font-size: .75rem;
-}
+.result-dot     { opacity: 0.5; }
+.result-has-img { font-size: 0.75rem; }
 
 
-/* ══════════════════════════════════════════════
-   ESTADO VAZIO (sem resultados)
-══════════════════════════════════════════════ */
+/* ─── Estado "sem resultados" ────────────────────────────────── */
+
 .search-empty {
   display: flex;
   flex-direction: column;
@@ -425,34 +327,19 @@
   gap: 8px;
 }
 
-.search-empty-icon {
-  font-size: 2.5rem;
-  opacity: .6;
-  margin-bottom: 4px;
-}
-
-.search-empty p {
-  font-size: .95rem;
-  font-weight: 600;
-  color: var(--ink-2);
-}
-
-.search-empty span {
-  font-size: .83rem;
-  color: var(--ink-3);
-  max-width: 240px;
-}
+.search-empty-icon { font-size: 2.5rem; opacity: 0.6; margin-bottom: 4px; }
+.search-empty p    { font-size: 0.95rem; font-weight: 600; color: var(--ink-2); }
+.search-empty span { font-size: 0.83rem; color: var(--ink-3); max-width: 240px; }
 
 
-/* ══════════════════════════════════════════════
-   HIGHLIGHT — destaque visual do termo encontrado
-   <mark class="search-highlight"> é inserido pelo JS
-══════════════════════════════════════════════ */
+/* ─── Highlight de termos encontrados ───────────────────────── */
+
+/*
+  O JS envolve os termos encontrados com <mark class="search-highlight">.
+  Por padrão, <mark> tem fundo amarelo — aqui sobrescrevemos com azul.
+*/
 mark.search-highlight {
-  /* Remove o amarelo padrão do <mark> */
-  background: transparent;
-  /* Substitui por sublinhado colorido */
-  background: rgba(37,80,232,.12);
+  background: rgba(37, 80, 232, 0.12);
   color: var(--accent);
   font-weight: 700;
   border-radius: 3px;
@@ -460,39 +347,19 @@ mark.search-highlight {
 }
 
 
-/* ══════════════════════════════════════════════
-   POST DESTACADO NO FEED
-   Animação pulsante quando um post é "encontrado"
-   por um clique em resultado de busca.
-══════════════════════════════════════════════ */
+/* ─── Destaque pulsante no post do feed ──────────────────────── */
+
+/*
+  Ao clicar em um resultado, o post correspondente no feed
+  recebe esta animação para chamar a atenção do usuário.
+*/
 @keyframes postHighlightPulse {
-  0%   { box-shadow: var(--sh), 0 0 0 0   rgba(37,80,232,.4); }
-  50%  { box-shadow: var(--sh), 0 0 0 8px rgba(37,80,232,.0); }
-  100% { box-shadow: var(--sh); }
+  0%   { box-shadow: var(--shadow), 0 0 0 0   rgba(37, 80, 232, 0.4); }
+  50%  { box-shadow: var(--shadow), 0 0 0 8px rgba(37, 80, 232, 0.0); }
+  100% { box-shadow: var(--shadow); }
 }
 
 .post-search-highlight {
   border-color: var(--accent) !important;
   animation: postHighlightPulse 1.4s ease 2;
-}
-
-
-/* ══════════════════════════════════════════════
-   RAIL DE BUSCA (desktop)
-   Campo compacto na barra lateral.
-   Visível apenas quando a aba search está ativa
-   ou sempre (depende da sua preferência de UX).
-══════════════════════════════════════════════ */
-.rail-search-wrap {
-  padding: 0 10px;
-  width: 100%;
-  margin-top: 8px;
-  margin-bottom: 4px;
-}
-
-/* Em telas menores, o campo da rail fica oculto */
-@media (max-width: 640px) {
-  .rail-search-wrap {
-    display: none;
-  }
 }
