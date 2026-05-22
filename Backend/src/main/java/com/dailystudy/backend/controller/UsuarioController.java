@@ -6,7 +6,6 @@ import com.dailystudy.backend.model.Usuario;
 import com.dailystudy.backend.service.UsuarioService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,9 +26,11 @@ public class UsuarioController {
         return ResponseEntity.ok("Usuário registrado com sucesso!");
     }
 
-    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO dto) {
+    @PostMapping("/login")
+    public ResponseEntity<String> login (@Valid @RequestBody LoginDTO dto) {
         String token = usuarioService.autenticar(dto);
 
         return ResponseEntity.ok(token);
     }
+
 }
