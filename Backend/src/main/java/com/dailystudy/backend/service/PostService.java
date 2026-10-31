@@ -12,7 +12,10 @@ import com.dailystudy.backend.repository.*;
 import com.dailystudy.backend.util.CursorCodec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+ 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.dailystudy.backend.service.TokenService;
  
 import java.time.Instant;
 import java.util.HashSet;
@@ -27,10 +30,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostService {
  
+    @Autowired
+    private PostRepository postRepository;
+ 
     private final IndexadorService indexadorService;
-    private final PostRepository postRepository;
     private final UsuarioRepository usuarioRepository;
     private final CurtidaRepository curtidaRepository;
+ 
+ 
  
     public Post criarPost(PostCreateDTO dto, Long autorId) {
         Post post = new Post();
@@ -104,36 +111,32 @@ public class PostService {
         return salvo;
     }
  
-    
     public List<PostFeedDTO> listarFeedAutor(Long usuarioLogadoId){
         List<Post> posts = postRepository.findByAutorIdOrderByDataCriacaoDesc(usuarioLogadoId);
         return mapearFeedDTO(posts, usuarioLogadoId);
     }
  
-   
     public List<PostFeedDTO> listarComentarios(String comentPostId, Long usuarioLogadoId){
         List<Post> comentarios = postRepository.findByComentPostIdOrderByDataCriacaoDesc(comentPostId);
         return mapearFeedDTO(comentarios, usuarioLogadoId);
     }
-    //Novos metodos para postagem 
-
-    public list<Post> obterPostagensDoUsuario(String emailUsuario) {
+ 
+    public List<Post> obterPostagensDoUsuario(Long usuarioId) {
         return postRepository
-        .findByAutorAndComentPostIdIsNullOrderByDataCriacaoDesc(emailUsuario);
+                .findByAutorIdAndComentPostIdIsNullOrderByDataCriacaoDesc(usuarioId);
     }
-     
-    public list <Post> obterRespostasDoUsuario(String emailUsuario) {
+
+    
+    public List<Post> obterRespostasDoUsuario(Long usuarioId) {
         return postRepository
-        .findByAutorAndComentPostIdIsNotNullOrderByDataCriacaoDesc(emailUsuario);
+                .findByAutorIdAndComentPostIdIsNotNullOrderByDataCriacaoDesc(usuarioId);
     }
  
-    public list <Post> obterComentariosDoPost(String postId) {
-        return postRepository
-        .findByComentPostIdOrderByDataCriacaoDesc(postId);
+     
+    public List<Post> obterRespostasDePost(String postId) {
+        return postRepository.findByComentPostIdOrderByDataCriacaoDesc(postId);
     }
-
-   // Final dos metodos novos para postagem
-
+ 
     private List<PostFeedDTO> mapearFeedDTO(List<Post> posts, Long usuarioLogadoId){
         if (posts.isEmpty()) {
             return List.of();
@@ -154,7 +157,6 @@ public class PostService {
         Map<String, Long> curtidasPorPost = curtidaRepository.countGroupedByPostId(postIds);
         Map<String, Long> comentariosPorPost = postRepository.countGroupedByComentPostId(postIds);
  
-        
         final Set<String> postIdsQueSoForamCurtidos;
  
         if (usuarioLogadoId != null) {
@@ -174,14 +176,12 @@ public class PostService {
             long totalCurtidas = curtidasPorPost.getOrDefault(post.getId(), 0L);
             long totalComentarios = comentariosPorPost.getOrDefault(post.getId(), 0L);
  
-            //  Verifica se este post está na lista de curtidos pelo usuário
             boolean curtidoPorEsteUsuario = postIdsQueSoForamCurtidos.contains(post.getId());
  
             return new PostFeedDTO(post, autorNome, autorFoto, totalCurtidas, totalComentarios, curtidoPorEsteUsuario);
         }).toList();
     }
  
-   
     public PostDetalhesDTO buscarDetalhes(String id, Long usuarioLogadoId) {
         Post post = postRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Post não encontrado"));
@@ -192,7 +192,6 @@ public class PostService {
         return new PostDetalhesDTO(postDTO, comentariosDTO);
     }
  
-   
     public FeedPageDTO listarFeedCursor(String cursorCodificado, int limit, Long usuarioLogadoId) {
         var cursor = CursorCodec.decode(cursorCodificado);
  
@@ -214,4 +213,5 @@ public class PostService {
  
         return new FeedPageDTO(dtos, nextCursor, hasMore);
     }
-}
+ 
+}  
