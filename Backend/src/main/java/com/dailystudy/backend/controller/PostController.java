@@ -46,7 +46,7 @@ public class PostController {
     
     @GetMapping("/meus")
     public ResponseEntity<List<Post>> minhasPostagens(
-        @RequestHeader(value = "Authorization", required = false) String AuthorizationHeader
+        @RequestHeader(value = "Authorization", required = false) String authorizationHeader
     ){
          if (authorizationHeader == null || authorizationHeader.isEmpty()){
             return ResponseEntity.status(401).build();
@@ -56,7 +56,7 @@ public class PostController {
     if (usuarioId == null || usuarioId <= 0){
         return ResponseEntity.status(401).build();
     }
-     List<Post> postagens = postService.obterPostagensDoUsuario(usuarioId);
+    List<Post> postagens = postService.obterPostagensDoUsuario(usuarioId);
     return ResponseEntity.ok(postagens);
     }
     
