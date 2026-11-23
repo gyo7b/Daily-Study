@@ -140,29 +140,32 @@ const Posts = (() => {
      `;
 
     card.addEventListener('click', event => {
-        const button = event.target.closest('[data-action]');
-  // ALTERAÇÃO 2 - Se clicar fora de qualquer botão de ação,
-  // abre o modal do post. Exceto editar, excluir e like — tratados abaixo.
-  if (!button) {
-            handleOpenPostModal(post.id);
-            return;
-        }
+    // ALTERAÇÃO 1: cliques dentro do modal de comentários não reabrem o modal
+    if (card.closest('#commentModal')) return;
 
-   const action = button.dataset.action;
+    const button = event.target.closest('[data-action]');
 
-        if (action === 'edit')     openEditModal(post.id, post.content);
-        if (action === 'delete')   openDeleteModal(post.id);
-        if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
-        if (action === 'profile')  Profile.openProfile(post.autorUsername);
-        if (action === 'like') {
-            event.stopPropagation();
-            handleLikeToggle(post.id, button);
-        }
-        if (action === 'comment') {
-            event.stopPropagation();
-            handleOpenPostModal(post.id);
-        }
-    });
+    // ALTERAÇÃO 2: clique no corpo do card (fora de botões) abre o modal
+    if (!button) {
+        handleOpenPostModal(post.id);
+        return;
+    }
+
+    const action = button.dataset.action;
+
+    if (action === 'edit')     openEditModal(post.id, post.content);
+    if (action === 'delete')   openDeleteModal(post.id);
+    if (action === 'lightbox') UI.openLightbox(post.mediaUrl);
+    if (action === 'profile')  Profile.openProfile(post.autorUsername);
+    if (action === 'like') {
+        event.stopPropagation();
+        handleLikeToggle(post.id, button);
+    }
+    if (action === 'comment') {
+        event.stopPropagation();
+        handleOpenPostModal(post.id);
+    }
+});
 
     return card; 
 }  
@@ -239,40 +242,50 @@ const Posts = (() => {
   }
 
   // Renderiza os posts na aba de perfil.
-  // Funciona da mesma forma que renderFeed, mas em outro container.
-
-  //curica: Aqui a mesma coisa que o de cima, porem nao esta funcionando corretamente, tem que revisar
-  //curica: Atualizacao: Agora tem um endpoint especifico, e a logica nao fica no front
-  async function renderProfilePosts() {
+  
+   async function renderProfilePosts() {
     const container = document.getElementById('profileFeed');
     const emptyEl   = document.getElementById('profileEmpty');
 
-    try {
-      const response = await fetch('/api/posts', {
-        headers: {...Auth.headers()}
-      });
-
-      if (!response.ok) throw new Error('Status ${response.status}');
-
-      const meusPosts = await response.json();
-      window.meusPosts = meusPosts; //guarda na memoria os nossos posts
-
-      container.innerHTML = '';
-
-    if (meusPosts.length === 0) {
-      emptyEl.classList.remove('hidden');
-    } else {
-      emptyEl.classList.add('hidden');
-    meusPosts.forEach(post => container.appendChild(createPostCard(post)));
+    if (!container || !emptyEl) {
+        console.error('renderProfilePosts: #profileFeed ou #profileEmpty não encontrado no HTML');
+        return;
     }
 
-    updateStats(meusPosts);
+    try {
+        // ALTERAÇÃO 1: endpoint de postagens do usuário logado
+        const response = await fetch('/api/posts/mine/postagens', {
+            headers: { ...Auth.headers() }
+        });
 
-  } catch (err) {
-    console.error("Erro ao carregar as postasgens do perfil" , err);
-    UI.showToast("Erro ao carregar seus posts" , err);
+        // ALTERAÇÃO 2: template string com crase para interpolar o status
+        if (!response.ok) throw new Error(`Status ${response.status}`);
 
-  }
+        const meusPosts = await response.json();
+
+        // ALTERAÇÃO 3: garante que é array antes de iterar
+        if (!Array.isArray(meusPosts)) {
+            throw new Error('Resposta do servidor não é uma lista');
+        }
+
+        window.meusPosts = meusPosts;
+        container.innerHTML = '';
+
+        if (meusPosts.length === 0) {
+            emptyEl.classList.remove('hidden');
+        } else {
+            emptyEl.classList.add('hidden');
+            meusPosts.forEach(post => container.appendChild(createPostCard(post)));
+        }
+
+        updateStats(meusPosts);
+
+    } catch (err) {
+        // ALTERAÇÃO 4: mensagem e stack completos no console
+        console.error('Erro ao carregar postagens do perfil:', err);
+        // ALTERAÇÃO 5: showToast recebe (mensagem, tipo) na ordem certa
+        UI.showToast('Erro ao carregar seus posts', 'err');
+    }
 }
 
   // Atualiza os números nos cards de estatísticas do perfil.

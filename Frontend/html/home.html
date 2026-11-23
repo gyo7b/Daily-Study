@@ -330,27 +330,36 @@
           </div>
         </div>
 
-
         <!-- Posts do usuário no perfil -->
-         <div class = "profile-tabs-container">
-         <div class="profile-tabs">
-           <button class ="tab=btn-active" data-tab="postagens">
-             Postagens
-           </button>
-         <button class="tab-btn" data-tab="respostas">
-             Respostas
-           </button>
-         </div>
-         
-         <div class ="profile-content">
-          <!-- Conteudo dinamicamente att-->
-         </div>
-        </div>
-        
-    </section>
+             <div role="region" aria-label="Suas postagens">
 
+      <div class="profile-tabs" role="tablist">
+        <button class="profile-tab-btn active" data-profile-tab="postagens" role="tab" aria-selected="true">Postagens</button>
+        <button class="profile-tab-btn" data-profile-tab="respostas" role="tab" aria-selected="false">Respostas</button>
+      </div>
 
-  </main>
+      <div class="section-head">
+        <span class="section-title">Suas postagens</span>
+        <div class="section-divider" aria-hidden="true"></div>
+      </div>
+
+      <!-- Container obrigatório: posts.js (renderProfilePosts) procura por #profileFeed -->
+      <div class="feed-list" id="profileFeed" role="feed"></div>
+
+      <!-- Estado vazio obrigatório: id profileEmpty -->
+      <div class="empty-state hidden" id="profileEmpty" role="status">
+        <div class="empty-ico" aria-hidden="true">✏️</div>
+        <h3>Sem postagens ainda</h3>
+        <p>Publique algo no feed!</p>
+      </div>
+
+      <!-- Container da aba Respostas (separado, com id próprio) -->
+      <div class="feed-list hidden" id="profileRespostas" role="feed"></div>
+      <div class="empty-state hidden" id="profileRespostasEmpty" role="status">
+        <div class="empty-ico" aria-hidden="true">💬</div>
+        <h3>Sem respostas ainda</h3>
+        <p>Responda a alguma postagem para vê-la aqui.</p>
+      </div>
 
 
   <!-- ── Barra de navegação mobile  -->
