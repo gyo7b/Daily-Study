@@ -277,3 +277,38 @@
   cursor: default;
   pointer-events: none;
 }
+
+/* ALTERAÇÃO 3: abas Postagens | Respostas do perfil */
+.profile-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-2);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  margin-bottom: 16px;
+}
+
+.profile-tab-btn {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-3);
+  transition: background var(--transition), color var(--transition);
+}
+
+.profile-tab-btn:hover {
+  color: var(--ink);
+}
+
+.profile-tab-btn.active {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow);
+}
+
+/* ALTERAÇÃO 4: card de estatística com rótulo e número alinhados */
+.stat-box .stat-num {
+  color: var(--accent);
+}
