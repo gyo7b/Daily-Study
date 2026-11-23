@@ -248,14 +248,13 @@ const Posts = (() => {
     const emptyEl   = document.getElementById('profileEmpty');
 
     try {
-      const response = await fetch('/api/posts/mine', {
+      const response = await fetch('/api/posts', {
         headers: {...Auth.headers()}
       });
 
-      if (!response.ok) throw new Error();
+      if (!response.ok) throw new Error('Status ${response.status}');
 
       const meusPosts = await response.json();
-
       window.meusPosts = meusPosts; //guarda na memoria os nossos posts
 
       container.innerHTML = '';
@@ -269,8 +268,10 @@ const Posts = (() => {
 
     updateStats(meusPosts);
 
-  } catch {
-    UI.showToast('Erro ao carregar seus posts', 'err');
+  } catch (err) {
+    console.error("Erro ao carregar as postasgens do perfil" , err);
+    UI.showToast("Erro ao carregar seus posts" , err);
+
   }
 }
 

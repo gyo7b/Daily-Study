@@ -111,11 +111,11 @@ public class UsuarioService {
 
     }
 
-    public PerfilPublicoDTO buscarPerfilPublico(String username) {
+    public PerfilPublicoDTO buscarPerfilPublico(String username, Long visitanteId) {
         Usuario usuario = usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado"));
 
-        List<PostFeedDTO> posts = postService.listarFeedAutor(usuario.getId());
+        List<PostFeedDTO> posts = postService.listarFeedAutor(usuario.getId(), visitanteId);
 
         return new PerfilPublicoDTO(
                 usuario.getUsername(),

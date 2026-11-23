@@ -87,8 +87,16 @@ public class UsuarioController {
     }
 
     @GetMapping("/perfil/{username}")
-    public ResponseEntity<PerfilPublicoDTO> listarPostsPorUsuarios(@PathVariable String username){
-        return ResponseEntity.ok(usuarioService.buscarPerfilPublico(username));
+    public ResponseEntity<PerfilPublicoDTO> listarPostsPorUsuarios
+            (@PathVariable String username,
+             @AuthenticationPrincipal Usuario visitante) {
+
+        Long visitanteId = visitante != null ? visitante.getId() : null;
+
+
+        return ResponseEntity.ok(usuarioService.buscarPerfilPublico(username, visitanteId));
+
+
     }
 
 }
