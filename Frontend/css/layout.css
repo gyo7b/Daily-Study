@@ -122,7 +122,7 @@
 /* Cada aba fica oculta por padrão */
 .tab-panel {
   display: none;
-  animation: fadeUp 0.28s ease both;
+  animation: fadeUp 0.28s ease;
 }
 
 /* Apenas a aba com .active é exibida */
